@@ -30,10 +30,60 @@
    
    * bean中的class指定了需创建的类，大多数beanFactory是直接new出该bean。
    * bean中id是必须唯一的且不可使用特殊符号，name可以是多个用都逗号分开.通过id和name都可以取到bean。
-   
-   
+
+  #### ApplicationContext实例化的方式
+  
+   两种方式基本相同，listener不能兼容servlet2.2
+  
+   ```xml
+     
+     <context-param>
+	   <param-name>contextConfigLocation</param-name>
+	   <param-value>classpath:applicationContext-mybatis.xml</param-value>
+	 </context-param>
+     
+     <!-- 1 : ContextLoaderListener 监听的方式加载ApplicationContext -->	
+	 <listener>
+	   <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	 </listener>
+   	
+   	 <!-- 2 : ContextLoaderServlet 方式 -->
+   	 <servlet>
+   	  <servlet-name>context</servlet-name>
+   	  <servlet-class>org.springframework.web.context.ContextLoaderServlet</servlet-class>
+   	  <load-on-startup>1</load-on-startup>
+   	 </servlet>
+   		
+   ```
+     
+  		   
 ### MVC
 
 ### 事务
 
 ### AOP
+ 
+  Spring针对J2EE中大部分能用AOP解决的问题，提供了一个优秀的解决方案。它默认使用JDK动态代理。
+ 
+  ####　概念 
+  
+  * AOP : 面向切面编程 Aspect oreinted Programming 。
+  * Aspect ： 切面
+  * advice ：通知
+  * PointCut：切入点
+  *　AOP代理
+ 
+ #### 通知类型
+ 
+  通知包括：Around通知，Before通知，Throws通知，After returnning通知 
+ 
+ #### AOP实现
+ 
+ AOP的实现主要有以下几种实现方式，基于代理，纯JAVA对象切面，@Aspect注解，注入形式的Aspect切面。下面逐一尝试。
+ 
+ 1. 基于代理的AOP。三步走，定义接口及业务实现，定义通知及切点，配置代理。
+ 
+  示例：请客吃饭，先通知大家时间地点，然后胡吃海喝，吃完各回各家。
+ 
+ 2. 
+ 

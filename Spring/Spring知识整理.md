@@ -1,3 +1,10 @@
+---
+title: 'Spring知识整理 '
+date: 2016-03-20 23:37:10
+categories: Java 
+tags: [Spring]
+---
+
 ## 整理
 ### 基础知识
  
@@ -65,7 +72,7 @@
  
   Spring针对J2EE中大部分能用AOP解决的问题，提供了一个优秀的解决方案。它默认使用JDK动态代理。
  
-  ####　概念 
+####　概念 
   
   * AOP : 面向切面编程 Aspect oreinted Programming 。
   * Aspect ： 切面
@@ -73,17 +80,110 @@
   * PointCut：切入点
   *　AOP代理
  
- #### 通知类型
+#### 通知类型
  
   通知包括：Around通知，Before通知，Throws通知，After returnning通知 
  
- #### AOP实现
+#### AOP实现
  
  AOP的实现主要有以下几种实现方式，基于代理，纯JAVA对象切面，@Aspect注解，注入形式的Aspect切面。下面逐一尝试。
  
  1. 基于代理的AOP。三步走，定义接口及业务实现，定义通知及切点，配置代理。
  
   示例：请客吃饭，先通知大家时间地点，然后胡吃海喝，吃完各回各家。
- 
- 2. 
- 
+  
+  ```xml
+    1. 定义接口及业务实现，定义通知实现诸如 MethodBeforeAdvice,AfterReturningAdvice类。
+	2. 配置文件配置。
+
+	<bean id="mk" class="com.test.spring.aop.demo1.MK"/>
+	<bean id="myAdvice" class="com.test.spring.aop.demo1.MyAdvice"/>
+	<!--  定义切入点 -->
+	<bean id="myPointCut" class="org.springframework.aop.support.JdkRegexpMethodPointcut">
+		<property name="pattern"  value=".*eat"></property>
+	</bean>
+	
+	<!-- 定义切面 -->
+	<bean id="myAspect" class="org.springframework.aop.support.DefaultPointcutAdvisor">
+		<property name="advice" ref="myAdvice"></property>
+		<property name="pointcut" ref="myPointCut"></property>
+	</bean>
+	
+	<!-- 定义代理 -->
+	<bean id="myProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="target" ref="mk"></property>
+		<property name="interceptorNames" value="myAspect"></property>
+	</bean>
+  ```
+
+ 2. 纯简单java对象的切面。相对第一种，省去了代理的步骤。
+  
+  ```xml
+    <bean id="mk" class="com.test.spring.aop.demo1.MK"/>
+	<bean id="myAdvice" class="com.test.spring.aop.demo1.MyAdvice"/>
+	
+	<!-- 定义切面 -->
+	<bean id="myAspect" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="advice" ref="myAdvice"></property>
+		<property name="pattern"  value=".*eat"></property>
+	</bean>
+	
+	<!-- 自动代理设置 -->
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>	
+  ```
+
+ 3. @Aspect注解形式
+
+  基于注解的方式需要添加spring-data-jpa、aspectjweaver、cglib三个jar包。
+  
+  ``` java
+	@Pointcut("execution(* *.eat(..))")
+	public void eatPoint(){}
+	
+	@AfterReturning("eatPoint()")
+	public void afterReturning() throws Throwable {
+		System.out.println("【注解】吃完饭后，各回各家,各找各妈！");
+	}
+
+	@Before("eatPoint()")
+	public void before() throws Throwable {
+		System.out.println("【注解】请吃饭前，通知大家：时间：2014.7.23，地点：海淀黄庄东坡酒楼！");
+	}
+  ```
+
+  ```xml
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context-3.1.xsd"> 
+        <context:component-scan base-package="com.test.spring.aop.demo3" annotation-config="true"/>
+        <aop:aspectj-autoproxy  proxy-target-class="true" />    
+      
+      <bean id="mk" class="com.test.spring.aop.demo3.MK"/>
+	</beans>
+  ```
+
+4. 注入形式的Aspect切面(这一种相对更简单一些)
+
+	主要是配置文件的变化。
+
+	```xml
+	  <bean id="mk" class="com.test.spring.aop.demo4.MK"/>
+      <bean id="myAdvice" class="com.test.spring.aop.demo4.MyAdvice"></bean>
+      
+      <aop:config>
+      	<aop:aspect ref="myAdvice">
+      		<aop:before method="beforeEat" pointcut="execution(* *.eat(..))"/>
+      		<aop:after-returning method="afterEat" pointcut="execution(* *.eat(..))"/>
+      	 </aop:aspect>
+      </aop:config>
+		
+	```
+  
